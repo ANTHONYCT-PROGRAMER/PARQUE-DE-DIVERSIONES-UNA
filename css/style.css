@@ -1,0 +1,309 @@
+/* ==========================================================================
+   ESTILOS VISUALES - PARQUE DE DIVERSIONES "UNA PUNO" 3D
+   Diseño Moderno: Glassmorphism, Paleta Nocturna y Microinteracciones
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+    --bg-dark: #07090e;
+    --primary-blue: #0b5ed7;
+    --accent-gold: #fec514;
+    --accent-red: #ff3344;
+    --neon-cyan: #00f0ff;
+    --glass-bg: rgba(14, 20, 32, 0.72);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.45);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-dark);
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-main);
+}
+
+#canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+}
+
+#glCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+}
+
+#glCanvas:active {
+    cursor: grabbing;
+}
+
+/* ==========================================================================
+   INTERFAZ DE USUARIO (HUD & CONTROLES GLASSMORPHIC)
+   ========================================================================== */
+.hud-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none; /* Dejar pasar clics hacia el canvas salvo en botones */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem;
+}
+
+/* Encabezado Superior */
+.hud-header {
+    pointer-events: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    padding: 0.9rem 1.6rem;
+    box-shadow: var(--glass-shadow);
+}
+
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.brand-logo {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--primary-blue), #032b69);
+    border: 2px solid var(--accent-gold);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.4rem;
+    box-shadow: 0 0 15px rgba(254, 197, 20, 0.35);
+}
+
+.brand-text h1 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, #ffffff, var(--accent-gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+}
+
+.brand-text p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Barra de Modos de Cámara */
+.camera-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 0.35rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.btn-cam {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.btn-cam:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.btn-cam.active {
+    background: linear-gradient(135deg, var(--primary-blue), #0a4699);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(11, 94, 215, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.btn-cam .badge-key {
+    background: rgba(0, 0, 0, 0.4);
+    font-size: 0.72rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-gold);
+}
+
+/* Panel Inferior: Telemetría y Controles */
+.hud-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem;
+}
+
+.telemetry-card {
+    pointer-events: auto;
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1rem 1.4rem;
+    box-shadow: var(--glass-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-width: 250px;
+}
+
+.telemetry-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.telemetry-title::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 10px #10b981;
+    display: inline-block;
+}
+
+.telemetry-value-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.telemetry-val {
+    font-size: 1.6rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+}
+
+.telemetry-lbl {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Panel de Controles Flotante Derecho */
+.controls-card {
+    pointer-events: auto;
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1rem 1.4rem;
+    box-shadow: var(--glass-shadow);
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.btn-action {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 0.55rem 1.1rem;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    background: rgba(255, 255, 255, 0.16);
+    transform: translateY(-1px);
+}
+
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.speed-control input[type=range] {
+    accent-color: var(--accent-gold);
+    cursor: pointer;
+}
+
+.speed-label {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-gold);
+    font-weight: 600;
+    min-width: 32px;
+}
+
+/* Indicador de ayuda de navegación */
+.help-pill {
+    pointer-events: auto;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 0.8rem;
+    backdrop-filter: blur(8px);
+}
+
+.help-pill kbd {
+    background: rgba(255, 255, 255, 0.12);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+}

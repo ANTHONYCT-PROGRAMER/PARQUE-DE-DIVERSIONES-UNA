@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Simulador 3D interactivo de Parque de Diversiones con Rueda de la Fortuna, Cámara POV y Pórtico Monumental UNA Puno desarrollado en WebGL2 puro (GLSL ES 3.00) para SIS226 Computación Gráfica.">
+    <title>Parque de Diversiones 3D UNA Puno - Computación Gráfica (SIS226)</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Contenedor del Lienzo Gráfico WebGL2 (Paso 1) -->
+    <div id="canvas-container">
+        <canvas id="glCanvas"></canvas>
+    </div>
+
+    <!-- Capa de Interfaz de Usuario y Controles (HUD Glassmorphic) -->
+    <div class="hud-layer">
+        
+        <!-- Encabezado Superior -->
+        <header class="hud-header">
+            <div class="brand-section">
+                <div class="brand-logo" title="Universidad Nacional del Altiplano">🏛️</div>
+                <div class="brand-text">
+                    <h1>Parque de Diversiones UNA Puno 3D</h1>
+                    <p>SIS226 • Computación Gráfica • WebGL2 & GLSL ES 3.00</p>
+                </div>
+            </div>
+
+            <!-- Selector de Modos de Cámara (Paso 6 y 15) -->
+            <nav class="camera-toolbar" aria-label="Controles de Cámara">
+                <button id="btnOrbital" class="btn-cam active" onclick="cambiarCamara(1)" title="Cámara orbital panorámica">
+                    <span>🌐 Vista Orbital</span>
+                    <span class="badge-key">1</span>
+                </button>
+                <button id="btnPOV" class="btn-cam" onclick="cambiarCamara(2)" title="Subir a la góndola de la Rueda de la Fortuna en primera persona">
+                    <span>🎡 Dentro del Juego (POV)</span>
+                    <span class="badge-key">2</span>
+                </button>
+                <button id="btnPortico" class="btn-cam" onclick="cambiarCamara(3)" title="Vista frontal del Pórtico y Cercado UNA Puno">
+                    <span>🏛️ Pórtico UNA Puno</span>
+                    <span class="badge-key">3</span>
+                </button>
+                <button id="btnFP" class="btn-cam" onclick="cambiarCamara(4)" title="Caminata libre en Primera Persona con teclas WASD y mouse">
+                    <span>🚶 1ª Persona (WASD)</span>
+                    <span class="badge-key">4</span>
+                </button>
+                <button id="btnCenit" class="btn-cam" onclick="cambiarCamara(5)" title="Vista superior (Cénit) de la Noria y el parque">
+                    <span>📐 Vista Superior</span>
+                    <span class="badge-key">5</span>
+                </button>
+                <button id="btnLateral" class="btn-cam" onclick="cambiarCamara(6)" title="Vista lateral de perfil de la estructura en A y oscilación de cabinas">
+                    <span>📐 Vista Lateral</span>
+                    <span class="badge-key">6</span>
+                </button>
+                <button id="btnMonumento" class="btn-cam" onclick="cambiarCamara(7)" title="Monumento a Enrique Torres Belón sobre el Globo Terráqueo y Plaza Cívica con Jardines">
+                    <span>🗽 Torres Belón & Jardines</span>
+                    <span class="badge-key">7</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- Barra Inferior: Telemetría y Acciones -->
+        <footer class="hud-footer">
+            
+            <!-- Telemetría Dinámica de la Cabina POV -->
+            <div id="panelPOV" class="telemetry-card" style="display: none;">
+                <div class="telemetry-title">Góndola n.º 0 • Altímetro</div>
+                <div class="telemetry-value-row">
+                    <span id="hudAltitud" class="telemetry-val">13.5 m</span>
+                    <span class="telemetry-lbl">Elevación sobre el suelo</span>
+                </div>
+                <p style="font-size: 0.76rem; color: #94a3b8; margin-top: 4px;">
+                    Arrastra el mouse para contemplar el parque desde la cabina.
+                </p>
+            </div>
+
+            <!-- Telemetría Dinámica de Caminata en Primera Persona -->
+            <div id="panelFP" class="telemetry-card" style="display: none;">
+                <div class="telemetry-title">Caminata Peatonal • 1ª Persona</div>
+                <div class="telemetry-value-row">
+                    <span id="hudFPPos" class="telemetry-val">X: 0.0m | Z: 26.0m</span>
+                    <span class="telemetry-lbl">Ubicación en el parque</span>
+                </div>
+                <div style="margin-top: 6px; font-size: 0.78rem; color: #cbd5e1; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Rejas del Pórtico:</span>
+                    <span id="badgeEstadoPuertas" style="font-weight: 700; color: #f87171;">CERRADAS</span>
+                </div>
+                <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 5px;">
+                    <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Caminar / Subir Rampa • <kbd>Shift</kbd> Correr • <kbd>E</kbd> Abrir Puertas
+                </p>
+            </div>
+
+            <!-- Píldora de atajos de navegación -->
+            <div class="help-pill">
+                <span><kbd>WASD</kbd> Caminar / Subir Rampa</span>
+                <span><kbd>E / Espacio</kbd> Abrir Rejas</span>
+                <span><kbd>N</kbd> Día / Noche</span>
+                <span><kbd>Click + Drag</kbd> Mirar</span>
+                <span><kbd>R</kbd> Reiniciar</span>
+            </div>
+
+            <!-- Controles de Simulación y Puertas -->
+            <div class="controls-card">
+                <button id="btnDiaNoche" class="btn-action" onclick="toggleDiaNoche()" title="Alternar entre Día Soleado y Noche Altiplánica (Tecla N)">
+                    ☀️ Modo Día
+                </button>
+                <button id="btnPuertas" class="btn-action" onclick="togglePuertas()" title="Abrir o cerrar las rejas del pórtico (Tecla E o Barra Espaciadora)">
+                    🚪 Abrir Puertas
+                </button>
+                <button id="btnPausa" class="btn-action" onclick="togglePausa()">
+                    ⏸ Pausar
+                </button>
+                <div class="speed-control">
+                    <label for="sliderVel">Velocidad:</label>
+                    <input id="sliderVel" type="range" min="0.2" max="3.0" step="0.1" value="1.0" oninput="setVelocidad(this.value)">
+                    <span id="lblVelocidad" class="speed-label">1.0x</span>
+                </div>
+            </div>
+
+        </footer>
+
+    </div>
+
+    <!-- Controlador Global de Errores para Diagnóstico Visual en Caso de Fallas de Red o Caché -->
+    <script>
+        window.addEventListener("error", function(e) {
+            console.error("Error detectado en la aplicación:", e);
+            const errBox = document.getElementById("error-banner");
+            if (errBox) {
+                errBox.style.display = "block";
+                errBox.innerHTML = "<strong>Aviso del Sistema:</strong> " + (e.message || "Error al cargar recursos. Presione Ctrl + F5 para limpiar la caché del navegador.");
+            }
+        });
+    </script>
+
+    <!-- Banner de Diagnóstico Oculto por Defecto -->
+    <div id="error-banner" style="display: none; position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 9999; background: rgba(220, 38, 38, 0.9); color: #fff; padding: 12px 24px; border-radius: 8px; font-family: sans-serif; font-size: 0.9rem; box-shadow: 0 8px 24px rgba(0,0,0,0.5); backdrop-filter: blur(8px);"></div>
+
+    <!-- Módulo Principal en JavaScript ES6 con Cache Buster (Paso 1) -->
+    <script type="module" src="js/main.js?v=13.0"></script>
+
+</body>
+</html>

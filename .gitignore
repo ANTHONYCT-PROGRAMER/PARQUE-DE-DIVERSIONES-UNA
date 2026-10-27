@@ -1,0 +1,11 @@
+# Sistema y editores
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Temporales y caches
+node_modules/
+scratch/
+__pycache__/
